@@ -1,21 +1,11 @@
 'use strict';
 
-// With background scripts you can communicate with popup
-// and contentScript files.
-// For more information on background script,
-// See https://developer.chrome.com/extensions/background_pages
+import {download} from './background/download.js';
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'GREETINGS') {
-    const message = `Hi ${
-      sender.tab ? 'Con' : 'Pop'
-    }, my name is Bac. I am from Background. It's great to hear from you.`;
+// import { onRequest,onRequestCompleted } from './background/network.js';
+//
+// console.log("==================",chrome)
+// chrome.webRequest.onBeforeRequest.addListener(onRequest, { urls: ["<all_urls>"] }, ['blocking']);
+// chrome.webRequest.onCompleted.addListener(onRequestCompleted, { urls: ["<all_urls>"] });
 
-    // Log message coming from the `request` parameter
-    console.log(request.payload.message);
-    // Send a response message
-    sendResponse({
-      message,
-    });
-  }
-});
+chrome.runtime.onMessage.addListener(download);

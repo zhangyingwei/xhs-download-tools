@@ -1,43 +1,63 @@
-'use strict';
+import {crateButton, remoteButton} from './content/button.js';
+import {getImageUrls} from './actions/ImageAction.js';
+import {getText} from './actions/TextAction.js';
+import { getVideoUrls } from './actions/VideoAction.js';
 
-// Content script file will run in the context of web page.
-// With content script you can manipulate the web pages using
-// Document Object Model (DOM).
-// You can also pass information to the parent extension.
+let buttonChanged = false;
+(function () {
+    createButton();
+    // 定义 MutationObserver 回调函数
+    const observer = new MutationObserver(handleDomChanges);
+    observer.observe(document.body, {
+        childList: true, // 监听子节点变化
+        subtree: false,   // 包括子树的所有变化
+    });
 
-// We execute this script by making an entry in manifest.json file
-// under `content_scripts` property
 
-// For more information on Content Scripts,
-// See https://developer.chrome.com/extensions/content_scripts
 
-// Log `title` of current active web page
-const pageTitle = document.head.getElementsByTagName('title')[0].innerHTML;
-console.log(
-  `Page title is: '${pageTitle}' - evaluated by Chrome extension's 'contentScript.js' file`
-);
+    const resources = performance.getEntriesByType('resource');
+    resources.forEach(resource => {
+        console.log("resources", resource.name);
 
-// Communicate with background file by sending a message
-chrome.runtime.sendMessage(
-  {
-    type: 'GREETINGS',
-    payload: {
-      message: 'Hello, my name is Con. I am from ContentScript.',
-    },
-  },
-  response => {
-    console.log(response.message);
-  }
-);
+        // TODO 失败，无法获取视频请求
+        // if (resource.initiatorType === 'script' && resource.name.endsWith('.mp4') || resource.name.endsWith('.m3u8')) {
+        //     console.log("resources", resource);
+        // }
+    });
+    console.log("初次运行脚本逻辑");
+})();
 
-// Listen for message
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'COUNT') {
-    console.log(`Current count is ${request.payload.count}`);
-  }
+function handleDomChanges(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+            // console.log("DOM 结构发生了变化:", mutation);
+            createButton();
+        }
+    }
+}
 
-  // Send an empty response
-  // See https://github.com/mozilla/webextension-polyfill/issues/130#issuecomment-531531890
-  sendResponse({});
-  return true;
-});
+function createButton(){
+    if (buttonChanged) {
+        return;
+    }
+    const container = document.getElementById('noteContainer');
+    if (container) {
+        const button = crateButton(containerDom => {
+            return {
+                imageUrls: getImageUrls(containerDom),
+                videoUrls: getVideoUrls(containerDom),
+                textContent: getText(containerDom)
+            }
+        });
+        buttonChanged = true
+        setTimeout(() => {
+            buttonChanged = false
+        }, 1000)
+    } else {
+        remoteButton()
+        buttonChanged = true
+        setTimeout(() => {
+            buttonChanged = false
+        }, 1000)
+    }
+}
