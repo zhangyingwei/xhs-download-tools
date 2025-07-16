@@ -1,0 +1,19 @@
+window.__INITIAL_STATE__
+{global: {…}, user: {…}, board: {…}, login: {…}, feed: {…}, …}
+
+window.__REDUX_STATE__
+undefined
+
+window.initialState
+undefined
+
+window.pageData
+undefined
+
+window.rawData
+undefined
+
+window.data
+undefined
+
+
